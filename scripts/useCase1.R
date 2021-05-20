@@ -5,7 +5,7 @@
 
 if (!require("ckanr")) install.packages("ckanr");library ("ckanr")
 if (!require("raster")) install.packages("raster");library ("raster")
-
+if (!require("rgdal")) install.packages("rgdal");library ("rgdal")
 
 ########################## Data download
 ## Connect to GeoKur CKAN and retrieve Permanent crops for human consumption
