@@ -16,8 +16,10 @@ if (!require("rgdal")) install.packages("rgdal");library ("rgdal")
 ########################## Data download
 ## Connect to GeoKur CKAN and retrieve Permanent crops for human consumption
 
-# Stefano API KEY
+#  BEFORE making public the repository REMEMBER to remove from history the CAN API KEY 
 ckanr_setup("https://geokur-dmp.geo.tu-dresden.de/", key = "42c17265-5741-4a73-9668-fb9535b13d47")
+
+
 
 # 
 pollination <- raster(resource_show(id = "09be0d5d-e67a-43ce-b80b-7e27861bbd13")$url)
