@@ -32,7 +32,7 @@ outputTableFinal <- outputTable[which(outputTable$yieldRapeseed>0&!is.na(outputT
 head(outputTableFinal) ## this would be the DATA OUTPUT!
 
 # store data -> not working yet!!!
-res <- package_create("Yields and pollination Europe", author="Lukas Egli")
+res <- package_create(name = "yields-and-pollination-europe", author="Lukas Egli")
 # then create a resource
 file <- system.file("examples", outputTableFinal, package = "ckanr")
 (xx <- resource_create(package_id = res$id,
