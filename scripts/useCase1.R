@@ -43,12 +43,11 @@ names(outputTable) <- c("yieldRapeseed","pollination")
 outputTableFinal <- outputTable[which(outputTable$yieldRapeseed>0&!is.na(outputTable$pollination)),] # remove 0 yields and NAs
 head(outputTableFinal) ## this would be the DATA OUTPUT!
 
-# store data -> Got the follwoing error so far: Access denied: User "xyz" not authorized to add dataset to this organization
+# store data -> Got the following error so far: Access denied: User "xyz" not authorized to add dataset to this organization
 res <- package_create(name = "yields-and-pollination-europe",
-                      author="Lukas Egli",
-                      contact_name = "Lukas Egli",
-                      owner_org = "TUD",
-                      theme = "BioDiv",
+                      owner_org = "tud",
+                      theme = "https://inspire.ec.europa.eu/theme/au",
+                      contact_name = "lukas egli",
                       was_generated_by = "NA")
 # then create a resource
 file <- system.file("examples", outputTableFinal, package = "ckanr")
