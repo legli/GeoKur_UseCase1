@@ -1,0 +1,19 @@
+
+Call:
+lm(formula = yieldRapeseed ~ pollination, data = outputTableFinal)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-2.11466 -0.64961 -0.02516  0.72305  1.60450 
+
+Coefficients:
+              Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  2.6610130  0.0323844   82.17   <2e-16 ***
+pollination -0.0047479  0.0003929  -12.08   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.7723 on 48812 degrees of freedom
+Multiple R-squared:  0.002982,	Adjusted R-squared:  0.002962 
+F-statistic:   146 on 1 and 48812 DF,  p-value: < 2.2e-16
+
