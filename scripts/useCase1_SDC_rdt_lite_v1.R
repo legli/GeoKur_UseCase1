@@ -1,18 +1,12 @@
 
 ## Extract and analyze data for GeoKur use case 1 (test)
-# Author: Lukas Egli
-# Date: 19/05/2021
+# Author: Lukas Egli & Stefano Della Chiesa
+# Date: 25/05/2021
 
 #---- Load required packages
 if (!require("ckanr")) install.packages("ckanr");library ("ckanr")
 if (!require("raster")) install.packages("raster");library ("raster")
 if (!require("rgdal")) install.packages("rgdal");library ("rgdal")
-
-
-#---- 
-## PROVENANCE (in progress)
-#Testing Packages for provenance tracking --> TBD
-
 
 # ----
 ## CONFIGURE CKAN CONNECITON
