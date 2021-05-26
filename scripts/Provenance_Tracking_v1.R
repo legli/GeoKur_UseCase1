@@ -4,22 +4,22 @@
 
 #---- 
 # Required
-if (!require("devtools")) install.packages("devtools");library ("devtools")
+#if (!require("devtools")) install.packages("devtools");library ("devtools")
 
 ## PROVENANCE
 # Install rdtLite Package to collect provenance as an R script executes 
-install_github("End-to-end-provenance/rdtLite", force = TRUE)
+#install_github("End-to-end-provenance/rdtLite")
 library(rdtLite)
 
 prov.run("scripts/useCase1_SDC_rdt_lite_v1.R")
 
 #devtools::install_github("End-to-end-provenance/provSummarizeR")
-#library("provSummarizeR")
+library("provSummarizeR")
 
-#prov.summarize("C:/Users/chiesa/AppData/Local/Temp/Rtmp2BtCaA/prov_useCase1_SDC_rdt_lite_v1/prov.json")
+prov.summarize("C:/Users/chiesa/AppData/Local/Temp/Rtmp2BtCaA/prov_useCase1_SDC_rdt_lite_v1/prov.json")
 
 ## VISUALIZE PROVENANCE WITHIN R
-install.packages("provViz")
+#install.packages("provViz")
 library("provViz")
 
 # not working

@@ -9,9 +9,14 @@ if (!require("raster")) install.packages("raster");library ("raster")
 if (!require("rgdal")) install.packages("rgdal");library ("rgdal")
 
 # ----
+## SET Working Directory
+setwd("C:/Users/chiesa/OneDrive - GeoSci/01_Personal/00_R/14_GeoKur_UseCase1/scripts")
+
+
+# ----
 ## CONFIGURE CKAN CONNECITON
 #(BEFORE making public the repository REMEMBER to remove from history the CAN API KEY) 
-ckanr_setup("https://geokur-dmp.geo.tu-dresden.de/", key = "42c17265-5741-4a73-9668-fb9535b13d47")
+ckanr_setup("https://geokur-dmp.geo.tu-dresden.de/", key = "d5ac40d9-4f7b-472c-8e99-d7323ff41467")
 
 # ----
 ## LOAD LOCALLY REMOTE RESOURCE FROM CKAN
@@ -21,7 +26,6 @@ yieldRapeseed <- raster(resource_show(id = "945acf8d-925f-44c5-8f45-4b6354f1734d
 
 
 # ----
-
 ## DATA PREPROCESSING
 
 # @prov [pollinationProj] = projectRaster(pollination) {basal change}
@@ -36,14 +40,16 @@ plot(yieldRapeseed,xlim=c(-20,50),ylim=c(20,70))
 outputTable <- cbind(as.data.frame(yieldRapeseed),as.data.frame(pollinationRes)) # rearrange to table
 names(outputTable) <- c("yieldRapeseed","pollination")
 
+
 # @prov [outputTableFinal] = cbind(yieldRapeseed,pollinationRes) {basal change} -> Intermediate step: maybe remove
 outputTableFinal <- outputTable[which(outputTable$yieldRapeseed>0&!is.na(outputTable$pollination)),] # remove 0 yields and NAs
 head(outputTableFinal) ## this would be the DATA OUTPUT!
 
+
 write.csv(outputTableFinal,"myOutputTable.csv")
 
-
-########################## Data analysis
+#---- 
+## DATA ANALYSIS
 # @prov [modelRapeseed] = lm(yieldRapeseed,pollinationRes) {core concept}
 # using original inputs instead of the output table is maybe more informative regarding provenance?
 modelRapeseed <- lm(yieldRapeseed~pollination,data=outputTableFinal) ## this would be the MODEL OUTPUT!
@@ -53,7 +59,7 @@ sink("LinearModelOutput.txt")
 print(summary(modelRapeseed))
 sink()  # returns output to the console
 
-
+# ----
 ## CREATE PACKAGE & PUSH IT TO CKAN
 res <- package_create(name = "test-file-yields-and-pollination-europe",
                       owner_org = "tud",
@@ -80,7 +86,7 @@ res <- package_create(name = "test-file-yields-and-pollination-europe",
 
 
 #ds_create(resource_id = xx$id, records = iris, force = TRUE)
-resource_show(xx$id)
+#resource_show(xx$id)
 
 
 #rm(list=ls())
