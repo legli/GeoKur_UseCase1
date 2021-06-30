@@ -104,7 +104,11 @@ output_dataset <- package_create(
 
 
 
-
+package_delete(id = input_dataset_pollination$name)
+package_delete(id = input_dataset_yieldRapeseed$name)
+package_delete(id = intermediate_dataset_pollinationProj$name)
+package_delete(id = intermediate_dataset_pollinationRes$name)
+package_delete(id = output_dataset$name)
 
 
 
