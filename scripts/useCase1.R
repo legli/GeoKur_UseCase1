@@ -17,7 +17,7 @@ if (!require("rgdal")) install.packages("rgdal");library ("rgdal")
 # ----
 ## CONFIGURE CKAN CONNECITON
 #(BEFORE making public the repository REMEMBER to remove from history the CAN API KEY) 
-ckanr_setup("https://geokur-dmp.geo.tu-dresden.de/", key = "42c17265-5741-4a73-9668-fb9535b13d47")
+ckanr_setup("https://geokur-dmp.geo.tu-dresden.de/", key = "42bec965-954b-4898-bc76-a18274bbc982")
 
 # ----
 ## LOAD LOCALLY REMOTE RESOURCE FROM CKAN
@@ -26,27 +26,88 @@ pollination <- raster(resource_show(id = "09be0d5d-e67a-43ce-b80b-7e27861bbd13")
 yieldRapeseed <- raster(resource_show(id = "945acf8d-925f-44c5-8f45-4b6354f1734d")$url)
 
 
-# ----
+# ---- CREATE INPUT 1 ----
+input_dataset_pollination <- package_create(
+  extras = c(
+    name = "input-input_dataset_pollination",
+    owner_org = "ufz",
+    contact_name = "lukas",
+    theme = "https://inspire.ec.europa.eu/theme/au"
+  )
+)
 
-## DATA PREPROCESSING
+# ---- CREATE INPUT 2 ----
+input_dataset_yieldRapeseed <- package_create(
+  extras = c(
+    name = "input_dataset_yieldRapeseed",
+    owner_org = "ufz",
+    contact_name = "lukas",
+    theme = "https://inspire.ec.europa.eu/theme/au"
+  )
+)
 
-# @prov [pollinationProj] = projectRaster(pollination) {basal change}
+
+########################## DATA PREPROCESSING
+
+# project raster
 pollinationProj <- projectRaster(pollination, crs="+proj=longlat +datum=WGS84 +no_defs ") # change crs
+# ---- CREATE INTERMEDIATE DATASET 1 ----
+intermediate_dataset_pollinationProj <- package_create(
+  extras = c(
+    name = "intermediate_dataset_pollinationProj",
+    owner_org = "ufz",
+    contact_name = "lukas",
+    theme = "https://inspire.ec.europa.eu/theme/au",
+    was_derived_from = input_dataset_pollination$name,
+    was_generated_by = '{"uri": "XYZ", "label": "Project"}'
+  )
+)
 
-# @prov [pollinationRes] = resample(pollination,yieldRapeseed) {value change}
-pollinationRes <- resample(pollinationProj,yieldRapeseed) # resample to 5 arcmin
+# resample to 5 arcmin
+pollinationRes <- resample(pollinationProj,yieldRapeseed) 
+# ---- CREATE INTERMEDIATE DATASET 2 ----
+intermediate_dataset_pollinationRes <- package_create(
+  extras = c(
+    name = "intermediate_dataset_pollinationRes",
+    owner_org = "ufz",
+    contact_name = "lukas",
+    theme = "https://inspire.ec.europa.eu/theme/au",
+    was_derived_from = intermediate_dataset_pollinationProj$name,
+    was_generated_by = '{"uri": "XYZ", "label": "Resample"}'
+  )
+)
 plot(pollinationRes,xlim=c(-20,50),ylim=c(20,70))
 plot(yieldRapeseed,xlim=c(-20,50),ylim=c(20,70))
 
-# @prov [outputTable] = cbind(yieldRapeseed,pollinationRes) {basal change} -> Intermediate step: maybe remove
-outputTable <- cbind(as.data.frame(yieldRapeseed),as.data.frame(pollinationRes)) # rearrange to table
-names(outputTable) <- c("yieldRapeseed","pollination")
 
-# @prov [outputTableFinal] = cbind(yieldRapeseed,pollinationRes) {basal change} -> Intermediate step: maybe remove
-outputTableFinal <- outputTable[which(outputTable$yieldRapeseed>0&!is.na(outputTable$pollination)),] # remove 0 yields and NAs
+# combine pollination and yield data  to table
+outputTable <- cbind(as.data.frame(yieldRapeseed),as.data.frame(pollinationRes)) 
+names(outputTable) <- c("yieldRapeseed","pollination")
+# remove 0 yields and NAs
+outputTableFinal <- outputTable[which(outputTable$yieldRapeseed>0&!is.na(outputTable$pollination)),] 
 head(outputTableFinal) ## this would be the DATA OUTPUT!
 
 write.csv(outputTableFinal,"myOutputTable.csv")
+
+
+# ---- CREATE OUTPUT DATASET ----
+output_dataset <- package_create(
+  extras = c(
+    name = "output-dataset",
+    owner_org = "ufz",
+    contact_name = "lukas",
+    theme = "https://inspire.ec.europa.eu/theme/au",
+    was_derived_from = paste(input_dataset_yieldRapeseed$name, intermediate_dataset_pollinationRes$name, sep=","), 
+    was_generated_by = '{"uri": "XYZ", "label": "Cbind"}'
+  )
+)
+
+
+
+
+
+
+
 
 
 ########################## Data analysis
