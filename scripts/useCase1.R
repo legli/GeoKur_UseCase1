@@ -19,7 +19,7 @@ if (!require("rgdal")) install.packages("rgdal");library ("rgdal")
 #(BEFORE making public the repository REMEMBER to remove from history the CAN API KEY) 
 ckanr_setup("https://geokur-dmp.geo.tu-dresden.de/", key = "42bec965-954b-4898-bc76-a18274bbc982")
 ckanr_setup("https://geokur-dmp.geo.tu-dresden.de/", key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2MjM0MTk5MTAsImp0aSI6Imprc0FrVnlRTHMzT1hjQS1PZXZjNGRVck1sc3g5SmptaGNKUmEyMjNNWWRhVkc0WHBKX3BuU3daSEZtS2tqVm03a2JUb0JEd19zT1VIN2Y4In0.HvWSVGr6RYmKXkyLCNQtMVmM_GB-dGLsJ9xtzLiQwW4")
-
+ckanr_setup("https://geokur-dmp.geo.tu-dresden.de/", key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2MjU2NjY0MDksImp0aSI6ImNacGlneDFXcFVzUHNUS2JOLWtjRU5KbVFBVzZiSzZRaHktcXFFQU9FeEhrTWx6emZlLXlkemc2UjhJd25PZlU3Ti1uVnROcU5HM1ozaVREIn0.yZDqt8WEGFJV6iZ13_L5EWwTvId3zQgpxiU0Rrhk0zM")
 
 # browse ckan available datasets, package list gives the human-readable identifieres of every public dataset. The API refers to those human-readable identifieres as
 # "name". In the CKAN Webpage we call them "Identifier".
