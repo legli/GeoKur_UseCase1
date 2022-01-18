@@ -5,11 +5,12 @@
 
 #---- Load required packages
 if (!require("ckanr")) install.packages("ckanr");library ("ckanr")
+if (!require("httr")) install.packages("httr");library ("httr")
+if (!require("jsonlite")) install.packages("jsonlite");library ("jsonlite")
+
 if (!require("raster")) install.packages("raster");library ("raster")
 if (!require("rgdal")) install.packages("rgdal");library ("rgdal")
 if (!require("sf")) install.packages("sf");library ("sf")
-if (!require("httr")) install.packages("httr");library ("httr")
-if (!require("jsonlite")) install.packages("jsonlite");library ("jsonlite")
 if (!require("tidyr")) install.packages("tidyr");library ("tidyr")
 
 
@@ -65,8 +66,8 @@ download_url_irrigation <- irrigation_metadata$resource[[1]]$url
 yieldRapeseed <- raster(download_url_rapeseed)
 yieldRapeseedQuality <- raster(download_url_rapeseedQuality)
 irrigationRapeseed <- raster(download_url_irrigation)
-
 pollination <- raster(download_url_pollination)
+
 temp=tempfile()
 download.file(download_url_pollination_points, temp)
 unzip(temp)
@@ -87,12 +88,13 @@ plot(irrigationRapeseed,xlim=c(-20,50),ylim=c(20,70))
 
 ########################## STEP 2: ASSESS FITNESS FOR USE FOR YIELD DATA
 ############ STEP 2.1: ASSESS PROVENANCE
+package_show(ckan_available_datasets[[22]])$id
 inputDatasets <- get_origin_datasets(paste0(dataset_base_url,"b0e5c26c-7762-4f99-8234-b793ce13d19c"))
 sapply(1:length(inputDatasets),function(i){
    package_show(tail(strsplit(inputDatasets[i],"/")[[1]],1))
   })
 
-## -> Decision I: reject map SPAM  (irrigatino as input -> circularities)
+## -> Decision I: reject map SPAM  (irrigation as input -> circularities)
 
 ############ STEP 2.2: ASSESS SPATIALLY EXPLICIT DATA QUALITY OF MONFREDA
 plot(yieldRapeseedQuality,xlim=c(-20,50),ylim=c(20,70))
