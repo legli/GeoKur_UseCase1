@@ -1,9 +1,10 @@
 
-## Extract and analyze data for GeoKur use case 1 (test)
+## Description: Extract data, assess fitness for use and analyze data in a stylized way
+## for GeoKur use case 1 
 # Author: Lukas Egli
-# Date: 08/12/2021
+# Date: 02/11/2022
 
-#---- Load required packages
+############# Load required packages
 if (!require("ckanr")) install.packages("ckanr");library ("ckanr")
 if (!require("httr")) install.packages("httr");library ("httr")
 if (!require("jsonlite")) install.packages("jsonlite");library ("jsonlite")
@@ -14,7 +15,7 @@ if (!require("sf")) install.packages("sf");library ("sf")
 if (!require("tidyr")) install.packages("tidyr");library ("tidyr")
 
 
-#---- Function to check provenance
+############# Function to check provenance
 get_origin_datasets <- function(dataset_uri, endpoint = "https://geokur-dmp2.geo.tu-dresden.de/fuseki/ckan_mirror/sparql") {
   query <- sprintf("SELECT ?dataset WHERE {<%s> <http://www.w3.org/ns/prov#wasDerivedFrom> ?dataset .}", dataset_uri)
   request <- sprintf("%s?query=%s", endpoint, URLencode(query, reserved = TRUE))
@@ -27,28 +28,25 @@ get_origin_datasets <- function(dataset_uri, endpoint = "https://geokur-dmp2.geo
   }
 }
 
-#---- Load required packages
-# Set some useful variables for later
+############# Set some useful variables for later
 dataset_base_url <- "https://geokur-dmp.geo.tu-dresden.de/dataset/"
 process_base_url <- "https://geokur-dmp.geo.tu-dresden.de/process/"
 workflow_base_url <- "https://geokur-dmp.geo.tu-dresden.de/workflow/"
 
-# ----
-## CONFIGURE CKAN CONNECITON
+
+############# CONFIGURE CKAN CONNECITON
 #(BEFORE making public the repository REMEMBER to remove from history the CAN API KEY) 
-ckanr_setup("https://geokur-dmp.geo.tu-dresden.de/", key = "42bec965-954b-4898-bc76-a18274bbc982")
-# ckanr_setup("https://geokur-dmp.geo.tu-dresden.de/", key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2MjM0MTk5MTAsImp0aSI6Imprc0FrVnlRTHMzT1hjQS1PZXZjNGRVck1sc3g5SmptaGNKUmEyMjNNWWRhVkc0WHBKX3BuU3daSEZtS2tqVm03a2JUb0JEd19zT1VIN2Y4In0.HvWSVGr6RYmKXkyLCNQtMVmM_GB-dGLsJ9xtzLiQwW4")
-# ckanr_setup("https://geokur-dmp.geo.tu-dresden.de/", key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2MjU2NjY0MDksImp0aSI6ImNacGlneDFXcFVzUHNUS2JOLWtjRU5KbVFBVzZiSzZRaHktcXFFQU9FeEhrTWx6emZlLXlkemc2UjhJd25PZlU3Ti1uVnROcU5HM1ozaVREIn0.yZDqt8WEGFJV6iZ13_L5EWwTvId3zQgpxiU0Rrhk0zM")
+ckanr_setup("https://geokur-dmp.geo.tu-dresden.de/", key = "XYZ")
 
 # browse ckan available datasets, package list gives the human-readable identifieres of every public dataset. The API refers to those human-readable identifieres as
 # "name". In the CKAN Webpage we call them "Identifier".
 ckan_available_datasets <- package_list()
 
 ########################## STEP 1: SEARCH AND DOWNLOAD DATA
+############ STEP 2.2: 
 yieldDatasets <- package_search(fq="tags:(yield OR Yield)")$results
 pollinationDatasets <- package_search(fq="tags:(Pollinat* OR pollinat*)")$results
 irrigationDatasets <- package_search(fq="tags:(Irrig* OR irrig*)")$results
-
 
 mapSpam_metadata <- package_show(yieldDatasets[[2]])
 monfreda_metadata <- package_show(yieldDatasets[[1]])
@@ -68,11 +66,6 @@ yieldRapeseedQuality <- raster(download_url_rapeseedQuality)
 irrigationRapeseed <- raster(download_url_irrigation)
 pollination <- raster(download_url_pollination)
 
-temp=tempfile()
-download.file(download_url_pollination_points, temp)
-unzip(temp)
-pollinationPoints <- readOGR(dsn = ".", layer = "Martin_pollinator data extracted")
-
 ## some initial data processing
 # define crs
 crs(irrigationRapeseed) <- "+proj=longlat +datum=WGS84 +no_defs "
@@ -82,9 +75,9 @@ pollinationProj <- projectRaster(pollination, crs="+proj=longlat +datum=WGS84 +n
 pollinationRes <- resample(pollinationProj,yieldRapeseed) 
 
 plot(pollinationRes,xlim=c(-20,50),ylim=c(20,70))
-plot(pollinationPoints,xlim=c(-20,50),ylim=c(20,70),add=T)
 plot(yieldRapeseed,xlim=c(-20,50),ylim=c(20,70))
 plot(irrigationRapeseed,xlim=c(-20,50),ylim=c(20,70))
+
 
 ########################## STEP 2: ASSESS FITNESS FOR USE FOR YIELD DATA
 ############ STEP 2.1: ASSESS PROVENANCE
@@ -93,53 +86,19 @@ inputDatasets <- get_origin_datasets(paste0(dataset_base_url,"b0e5c26c-7762-4f99
 sapply(1:length(inputDatasets),function(i){
    package_show(tail(strsplit(inputDatasets[i],"/")[[1]],1))
   })
-
-## -> Decision I: reject map SPAM  (irrigation as input -> circularities)
+## -> Decision I: reject map SPAM  (irrigation as input -> circular reasoning)
 
 ############ STEP 2.2: ASSESS SPATIALLY EXPLICIT DATA QUALITY OF MONFREDA
 plot(yieldRapeseedQuality,xlim=c(-20,50),ylim=c(20,70))
 tableQuality <- cbind(as.data.frame(yieldRapeseedQuality),as.data.frame(pollinationRes))
-tableQuality <- tableQuality[which(!is.na(tableQuality$layer)&tableQuality$rapeseed_dataquality_yield>0),]
+tableQuality <- tableQuality[which(!is.na(tableQuality$X3b_visitprob)&tableQuality$rapeseed_dataquality_yield>0),]
 head(tableQuality)
 mean(tableQuality$rapeseed_dataquality_yield)
 ## -> Decision II: accept monfreda due to high quality in Europe
 
-########################## STEP 3: ASSESS FITNESS FOR USE FOR POLLINATION DATA
-############ STEP 3.1: CHECK DATA QUALITY WITH INDEPENDENT DATA
-#### pollination 
-## get sites
-pointID <- pollinationPoints[,c("SiteID")]
-pointID <- pointID[!duplicated(pointID$SiteID),]
 
-## aggregate over years
-pollinationPointsMeanAbundanceSpecies <- aggregate(Abundnc~SiteID+SpecsID+Txnmc_g,pollinationPoints,function(i){mean(i,na.rm=T)})
-sum(duplicated(pollinationPointsMeanAbundanceSpecies [c("SiteID","SpecsID")]))
-
-# total abundances
-pollinationPointsSumAbundance <- aggregate(Abundnc~SiteID,pollinationPointsMeanAbundanceSpecies,function(i){sum(i,na.rm=T)})
-
-## combine data
-pointsValues <- merge(pointID,pollinationPointsSumAbundance)
-head(pointsValues)
-nrow(pointsValues)
-
-### extract raster data by points
-rasValue=raster::extract(pollinationProj, pointsValues)
-head(rasValue)
-combinePointValue=as.data.frame(cbind(pointsValues,rasValue))
-head(combinePointValue)
-names(combinePointValue)[(ncol(combinePointValue)-2)] <- "pollinationModelled"
-sum(is.na(combinePointValue))
-sum(is.na(combinePointValue))
-combinePointValue <- na.omit(combinePointValue)
-
-# R2
-mod <- lm(pollinationModelled~Abundnc,combinePointValue)
-dataQualityR2 <- round(summary(mod)$r.squared,4)
-## -> Decision III: quality might be rather low, but still accept dataset because of lacking alternatives?
-
-########################## STEP 4: DATA PROCESSING AND ANALYSIS
-# combine pollination and yield data  to table
+########################## STEP 3: DATA PROCESSING AND ANALYSIS
+############ STEP 3.1: combine pollination and yield data  to table
 outputTable <- cbind(as.data.frame(yieldRapeseed),as.data.frame(pollinationRes),as.data.frame(irrigationRapeseed)) 
 names(outputTable) <- c("yieldRapeseed","pollination","irrigationRapeseed")
 # remove 0 yields and NAs
@@ -147,23 +106,13 @@ outputTableFinal <- outputTable[which(outputTable$yieldRapeseed>0&!is.na(outputT
 head(outputTableFinal) ## this would be the DATA OUTPUT!
 write.csv(outputTableFinal,"myOutputTable.csv")
 
-# model rapeseed yield
+############ STEP 3.2: model rapeseed yield (stylized model)
 modelRapeseed <- lm(yieldRapeseed~pollination+irrigationRapeseed,data=outputTableFinal) ## this would be the MODEL OUTPUT!
 save(modelRapeseed,file="modelRapeseed.RData")
 
-########################## STEP 5: ADD DATA TO CKAN
 
-############ STEP 5.1: ADD NEW DATA QUALITY INFORMATION TO POLLINATION DATASET
-pollination_metadata[which(names(pollination_metadata) %in% c("relationships_as_object", "relationships_as_subject", "resources", "tags", "groups", "organization"))] <- NULL
-pollination_metadata$quality_metrics=paste0("{\"https://geokur-dmp.geo.tu-dresden.de/quality-register#QuantitativeAttributeAccuracyasCoefficientofDetermination\":{\"label\":\"Quantitative Attribute Accuracy as Coefficient of Determination (R²)\",\"values\":{\"value of quality metric\":\"",
-                                            dataQualityR2,
-                                            "\",\"ground truth dataset\":\"\",\"confidence term\":\"\",\"confidence value\":\"\",\"thematic representativity\":\"\",\"spatial representativity\":\"\",\"temporal representativity\":\"\",\"name of quality source\":\"\",\"type of quality source\":\"\",\"link to quality source\":\"\"}}}")
-pollination_metadata[which(names(pollination_metadata) %in% c("relationships_as_object", "relationships_as_subject", "resources", "tags", "groups", "organization"))] <- NULL
-package_patch(pollination_metadata)
-
-
-############ STEP 5.2: UPLOAD NEWLY PRODUCED DATASETS TO CKAN
-## output table
+########################## STEP 4: ADD DATA TO CKAN
+############ STEP 4.1: UPLOAD OUTPUT TABLE (METADATA, RESOURCE, PROCESS)
 # metadata
 output_dataset <- package_create(
   extras = c(
@@ -171,7 +120,7 @@ output_dataset <- package_create(
     title = "Output dataset",
     description = "",
     owner_org = "ufz",
-    contact_name = "lukas",
+    contact_name = "lukas egli",
     was_derived_from = paste(
       paste0(dataset_base_url,monfreda_metadata$id), 
       paste0(dataset_base_url,pollination_metadata$id),
@@ -198,7 +147,7 @@ cbind_metadata <- package_create(
     title = "Combine Rapeseed And Pollination",
     notes = "Bind rapeseed yield and pollination rasters to common table and remove rapeseed values equal to zero and pollination values that are not defined.",
     owner_org = "ufz",
-    contact_name = "lukas",
+    contact_name = "lukas egli",
     used = paste(
       paste0(dataset_base_url, monfreda_metadata$id),
       paste0(dataset_base_url, pollination_metadata$id),
@@ -212,7 +161,7 @@ cbind_metadata <- package_create(
 # package_delete(id = cbind_metadata$name)
                       
 
-## model
+############ STEP 4.2: MODEL (METADATA, RESOURCE, PROCESS)
 # metadata
 model_rapeseed_output_metadata <- package_create(
   extras = c(
@@ -220,7 +169,7 @@ model_rapeseed_output_metadata <- package_create(
     title = "Model rapeseed output",
     # conforms_to = "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
     owner_org = "ufz",
-    contact_name = "lukas",
+    contact_name = "lukas egli",
     # theme = "https://inspire.ec.europa.eu/theme/au",
     was_derived_from = paste0(dataset_base_url, output_dataset$id)
   )
@@ -228,7 +177,7 @@ model_rapeseed_output_metadata <- package_create(
 # model_rapeseed_output_metadata <- package_show("model_rapeseed_output")
 # package_delete(id = model_rapeseed_output_metadata$name)
 
-# dataset
+# resource
 resource_create(package_id = model_rapeseed_output_metadata$id,
                 description = "myModelOutput",
                 name = "myOutputTableFinal",
@@ -244,7 +193,7 @@ model_rapeseed_metadata <- package_create(
     title = "Model rapeseed",
     notes = "linear regression model relating rapeseed yield to pollination",
     owner_org = "ufz",
-    contact_name = "lukas",
+    contact_name = "lukas egli",
     used = paste0(dataset_base_url, output_dataset$id),
     generated = paste0(dataset_base_url, model_rapeseed_output_metadata$id)
     # category = "geokur:Selection"
